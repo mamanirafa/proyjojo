@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Robots - JoJo AsisTECH{% endblock %}
+
+{% block head_css %}
+    <style>
+        /* Sobrescribir estilos del layout base para esta página */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .app-layout {
+            display: block;
+        }
+        
+        .main-wrapper {
+            margin-left: 0;
+        }
+        
+        .content-wrapper {
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .robot-select-page {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #B8C9FF 0%, #7B9FFF 100%);
+            position: relative;
+            padding: 2rem;
+            overflow: hidden;
+        }
+        
+        .wave-background {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background-image: url('{{ url_for('static', filename='img/FondoWave.png') }}');
+            background-size: cover;
+            background-position: bottom;
+            background-repeat: no-repeat;
+            z-index: 0;
+        }
+        
+        .content-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: #4A5FCC;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        .edit-button {
+            background: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        
+        .edit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: #1E1228;
+            margin: 0 0 2rem 0;
+            font-weight: 600;
+        }
+        
+        .robots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .robot-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 180px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .robot-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .robot-icon {
+            width: 70px;
+            height: 70px;
+            background: #1E1228;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .robot-icon i {
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .robot-name {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1E1228;
+            margin: 0.5rem 0;
+        }
+        
+        .robot-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-online {
+            background: #28a745;
+        }
+        
+        .status-offline {
+            background: #dc3545;
+        }
+        
+        .arrow-button {
+            width: 50px;
+            height: 50px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .arrow-button i {
+            color: #333;
+            font-size: 1.2rem;
+        }
+        
+        .add-robot-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px dashed #adb5bd;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .add-robot-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #6c757d;
+        }
+        
+        .add-robot-card i {
+            font-size: 3rem;
+            color: #adb5bd;
+            margin-bottom: 1rem;
+        }
+        
+        .add-robot-card p {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .location-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .location-card i {
+            font-size: 3rem;
+            color: #1E1228;
+            margin-bottom: 1rem;
+        }
+        
+        .location-card h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #1E1228;
+        }
+        
+        @media (max-width: 768px) {
+            .robots-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="robot-select-page">
+    <div class="wave-background"></div>
+    
+    <div class="content-container">
+        <div class="header-section">
+            <div class="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <button class="edit-button">
+                <i class="fa-solid fa-pen"></i>
+                Editar
+            </button>
+        </div>
+        
+        <h1 class="page-title">Mis Robots</h1>
+        
+        <div class="robots-grid">
+            {% if robots %}
+                {% for robot in robots %}
+                <a href="{{ url_for('robot.control', robot_id=robot.id) }}" class="robot-card">
+                    <div class="robot-icon">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <h2 class="robot-name">{{ robot.name }}</h2>
+                    <div class="arrow-button">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </a>
+                {% endfor %}
+                
+                <!-- Tarjeta de ubicaciones -->
+                <div class="robot-card location-card">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <h3>Ubicaciones</h3>
+                </div>
+                
+                <!-- Tarjeta para agregar robot -->
+                <div class="robot-card add-robot-card">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+            {% else %}
+                <div class="robot-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                    <i class="fa-solid fa-robot" style="color: #ccc; font-size: 4rem; margin-bottom: 1rem;"></i>
+                    <h3 style="color: #666;">No tienes robots registrados</h3>
+                    <p style="color: #999; margin-top: 0.5rem;">Contacta al administrador para agregar un robot a tu cuenta.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

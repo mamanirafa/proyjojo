@@ -17,3 +17,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance', 'jojo.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Configuración MQTT
+    MQTT_BROKER_HOST = os.environ.get('MQTT_BROKER_HOST') or 'localhost'
+    MQTT_BROKER_PORT = int(os.environ.get('MQTT_BROKER_PORT') or 1883)
+    MQTT_USERNAME = os.environ.get('MQTT_USERNAME') or ''
+    MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD') or ''
+    MQTT_KEEPALIVE = int(os.environ.get('MQTT_KEEPALIVE') or 60)

@@ -31,6 +31,10 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    
+    # 4b. Inicialización del cliente MQTT
+    from .mqtt_client import mqtt_client
+    mqtt_client.init_app(app)
 
     # 5. Creación de la carpeta 'instance' si no existe
     try:
@@ -40,14 +44,17 @@ def create_app(config_class=Config):
 
     # 6. Registro de los Blueprints (módulos de la aplicación)
     with app.app_context():
-        from .blueprints import auth, dashboard
+        from .blueprints import auth, dashboard, robot, api
         app.register_blueprint(auth.auth_bp)
         app.register_blueprint(dashboard.dashboard_bp)
+        app.register_blueprint(robot.robot_bp)
+        app.register_blueprint(api.api_bp)
 
     # 7. Registro de los Comandos CLI
-    from .commands import seed_roles_command, create_admin_command
+    from .commands import seed_roles_command, create_admin_command, create_robot_command
     app.cli.add_command(seed_roles_command)
     app.cli.add_command(create_admin_command)
+    app.cli.add_command(create_robot_command)
 
     # 8. Importar los modelos para que SQLAlchemy y Flask-Migrate los reconozcan
     from . import models

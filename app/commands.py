@@ -2,7 +2,7 @@
 
 import click
 from app import db
-from app.models import Role, User  # <-- IMPORTAMOS User AQUÍ, ESTA ERA LA LÍNEA QUE FALTABA
+from app.models import Role, User, Robot  # <-- Añadimos Robot aquí
 
 # El comando seed-roles no necesita cambios, pero lo dejamos para que el archivo esté completo.
 @click.command('seed-roles')
@@ -64,3 +64,50 @@ def create_admin_command(username, email, password):
     db.session.commit()
 
     click.echo(click.style(f"Usuario administrador '{username}' creado exitosamente.", fg='green'))
+
+
+# --- Nuevo comando para crear robots ---
+@click.command('create-robot')
+@click.option('--name', prompt='Nombre del robot', help='Nombre descriptivo del robot.')
+@click.option('--serial', prompt='Número de serie', help='Número de serie único del robot.')
+@click.option('--username', prompt='Usuario propietario', help='Nombre de usuario del propietario.')
+@click.option('--mqtt-topic', default=None, help='Tópico MQTT base (opcional, se generará automáticamente si no se proporciona).')
+def create_robot_command(name, serial, username, mqtt_topic):
+    """Crea un nuevo robot y lo asocia a un usuario."""
+    
+    click.echo("Iniciando creación de robot...")
+    
+    # Verificar que el usuario existe
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        click.echo(click.style(f"Error: El usuario '{username}' no existe.", fg='red'))
+        return
+    
+    # Verificar que el serial no esté duplicado
+    if Robot.query.filter_by(serial_number=serial).first():
+        click.echo(click.style(f"Error: Ya existe un robot con el número de serie '{serial}'.", fg='red'))
+        return
+    
+    # Generar tópico MQTT si no se proporcionó
+    if not mqtt_topic:
+        mqtt_topic = f"jojo/{serial.lower().replace(' ', '_')}"
+    
+    # Crear el robot
+    new_robot = Robot(
+        name=name,
+        serial_number=serial,
+        mqtt_topic=mqtt_topic,
+        user_id=user.id,
+        is_active=True,
+        is_online=False,
+        battery_level=100
+    )
+    
+    db.session.add(new_robot)
+    db.session.commit()
+    
+    click.echo(click.style(f"✓ Robot '{name}' creado exitosamente.", fg='green'))
+    click.echo(f"  - Número de serie: {serial}")
+    click.echo(f"  - Propietario: {username}")
+    click.echo(f"  - Tópico MQTT: {mqtt_topic}")
+    click.echo(f"  - ID: {new_robot.id}")

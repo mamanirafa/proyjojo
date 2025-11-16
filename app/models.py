@@ -36,6 +36,9 @@ class User(db.Model, UserMixin):
     # Relación con Role
     roles = db.relationship('Role', secondary=user_roles, lazy='subquery',
                             backref=db.backref('users', lazy=True))
+    
+    # Relación con Robot (un usuario puede tener varios robots)
+    robots = db.relationship('Robot', backref='owner', lazy=True)
 
     def set_password(self, password):
         """Crea un hash de la contraseña."""
@@ -47,3 +50,23 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+
+class Robot(db.Model):
+    """Modelo para los robots JoJo."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    serial_number = db.Column(db.String(100), unique=True, nullable=False)
+    mqtt_topic = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    is_online = db.Column(db.Boolean, default=False)
+    battery_level = db.Column(db.Integer, default=100)
+    last_seen = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Foreign Key al usuario dueño del robot
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Robot {self.name} ({self.serial_number})>'

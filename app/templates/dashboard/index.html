@@ -13,7 +13,9 @@
             <img src="{{ url_for('static', filename='img/LogodeAsisTECH.png') }}" alt="Logo AsisTECH">
         </div>
         <div class="actions-container">
-            <div class="action-btn"><i class="fa-solid fa-robot"></i><p>Buscar<br>mi Asistente</p></div>
+            <a href="{{ url_for('robot.select') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-robot"></i><p>Buscar<br>mi Asistente</p>
+            </a>
             <div class="action-btn"><i class="fa-solid fa-video"></i><p>Videollamada</p></div>
             <div class="action-btn"><i class="fa-solid fa-house"></i><p>Hogar</p></div>
             <div class="action-btn"><i class="fa-solid fa-phone"></i><p>Llamada</p></div>
