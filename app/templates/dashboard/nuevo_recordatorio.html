@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Recordatorio - JoJo AsisTECH{% endblock %}
+
+{% block head_css %}
+    <style>
+        .form-container {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-header h1 {
+            color: #1E1228;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .back-btn {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #1E1228;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group label .required {
+            color: #ea4335;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-group:hover {
+            background: #e9ecef;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(66, 133, 244, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .category-icons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .category-option {
+            display: none;
+        }
+
+        .category-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .category-label i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-label span {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .category-option:checked + .category-label {
+            border-color: #4285f4;
+            background: #e8f0fe;
+            color: #4285f4;
+        }
+
+        .helper-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.3rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .category-icons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <a href="{{ url_for('dashboard.recordatorios') }}" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </a>
+            <h1><i class="fa-solid fa-plus-circle"></i> Nuevo Recordatorio</h1>
+        </div>
+
+        <form method="POST" action="{{ url_for('dashboard.nuevo_recordatorio') }}">
+            <div class="form-group">
+                <label for="title">Título <span class="required">*</span></label>
+                <input type="text" id="title" name="title" required 
+                       placeholder="Ej: Tomar medicamento para la presión">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descripción</label>
+                <textarea id="description" name="description" 
+                          placeholder="Detalles adicionales del recordatorio (opcional)"></textarea>
+                <span class="helper-text">Añade información adicional si es necesaria</span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Fecha <span class="required">*</span></label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="time">Hora <span class="required">*</span></label>
+                    <input type="time" id="time" name="time" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Categoría <span class="required">*</span></label>
+                <div class="category-icons">
+                    <div>
+                        <input type="radio" id="cat-medicina" name="category" value="medicina" 
+                               class="category-option" checked>
+                        <label for="cat-medicina" class="category-label">
+                            <i class="fa-solid fa-pills" style="color: #ea4335;"></i>
+                            <span>Medicina</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" id="cat-cita" name="category" value="cita" 
+                               class="category-option">
+                        <label for="cat-cita" class="category-label">
+                            <i class="fa-solid fa-calendar-check" style="color: #fbbc04;"></i>
+                            <span>Cita</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" id="cat-actividad" name="category" value="actividad" 
+                               class="category-option">
+                        <label for="cat-actividad" class="category-label">
+                            <i class="fa-solid fa-person-walking" style="color: #34a853;"></i>
+                            <span>Actividad</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" id="cat-otro" name="category" value="otro" 
+                               class="category-option">
+                        <label for="cat-otro" class="category-label">
+                            <i class="fa-solid fa-circle-info" style="color: #4285f4;"></i>
+                            <span>Otro</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="repeat">Repetir</label>
+                <select id="repeat" name="repeat">
+                    <option value="once">Una vez</option>
+                    <option value="daily">Diariamente</option>
+                    <option value="weekly">Semanalmente</option>
+                    <option value="monthly">Mensualmente</option>
+                </select>
+                <span class="helper-text">Elige si quieres que el recordatorio se repita</span>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="robot_notification" name="robot_notification" checked>
+                    <label for="robot_notification">
+                        <i class="fa-solid fa-robot"></i> Notificar mediante el robot JoJo
+                    </label>
+                </div>
+                <span class="helper-text">JoJo te avisará cuando llegue el momento del recordatorio</span>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('dashboard.recordatorios') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-check"></i> Crear Recordatorio
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Establecer la fecha mínima como hoy
+    document.getElementById('date').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

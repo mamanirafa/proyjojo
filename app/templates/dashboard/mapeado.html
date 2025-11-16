@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Mapeado del Hogar - JoJo AsisTECH{% endblock %}
+
+{% block head_css %}
+    <style>
+        .mapping-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .mapping-header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mapping-header h1 {
+            color: #1E1228;
+            font-size: 2rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .controls-panel {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .control-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .control-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+        }
+
+        .control-btn.active {
+            background: #4285f4;
+            color: white;
+            border-color: #4285f4;
+        }
+
+        .mapping-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 1.5rem;
+        }
+
+        .sidebar-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .panel-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .panel-card h3 {
+            margin: 0 0 1rem 0;
+            color: #1E1228;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .robot-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .robot-option {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .robot-option:hover {
+            border-color: #4285f4;
+            background: #f8f9fa;
+        }
+
+        .robot-option.selected {
+            border-color: #4285f4;
+            background: #e8f0fe;
+        }
+
+        .robot-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .robot-status-dot.online {
+            background: #34a853;
+        }
+
+        .robot-status-dot.offline {
+            background: #ea4335;
+        }
+
+        .map-canvas-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .map-canvas {
+            width: 100%;
+            aspect-ratio: 16/10;
+            background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
+                        linear-gradient(-45deg, #f8f9fa 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, #f8f9fa 75%),
+                        linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .map-placeholder {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .map-placeholder i {
+            font-size: 5rem;
+            color: #ccc;
+            margin-bottom: 1.5rem;
+        }
+
+        .map-placeholder h3 {
+            color: #666;
+            margin: 0 0 1rem 0;
+        }
+
+        .map-placeholder p {
+            color: #999;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .start-mapping-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+            transition: all 0.2s;
+        }
+
+        .start-mapping-btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(66, 133, 244, 0.4);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-item .value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #4285f4;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-item .label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 1024px) {
+            .mapping-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mapping-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .controls-panel {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="mapping-container">
+    <div class="mapping-header">
+        <h1>
+            <i class="fa-solid fa-map-location-dot"></i>
+            Mapeado del Hogar
+        </h1>
+        <div class="controls-panel">
+            <button class="control-btn active">
+                <i class="fa-solid fa-map"></i> Vista Mapa
+            </button>
+            <button class="control-btn">
+                <i class="fa-solid fa-route"></i> Rutas Guardadas
+            </button>
+            <button class="control-btn">
+                <i class="fa-solid fa-download"></i> Exportar
+            </button>
+        </div>
+    </div>
+
+    <div class="mapping-grid">
+        <!-- Sidebar con controles -->
+        <div class="sidebar-panel">
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-robot"></i> Seleccionar Robot</h3>
+                <div class="robot-selector">
+                    {% if robots %}
+                        {% for robot in robots %}
+                        <div class="robot-option {% if loop.first %}selected{% endif %}">
+                            <span class="robot-status-dot {% if robot.is_online %}online{% else %}offline{% endif %}"></span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 0.9rem;">{{ robot.name }}</div>
+                                <div style="font-size: 0.75rem; color: #666;">{{ robot.serial_number }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #999; font-size: 0.9rem; margin: 0;">No tienes robots disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-chart-simple"></i> Estadísticas</h3>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="value">0</div>
+                        <div class="label">Área m²</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value">0</div>
+                        <div class="label">Zonas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value">0</div>
+                        <div class="label">Objetos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-palette"></i> Leyenda</h3>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4285f4;"></div>
+                    <span>Áreas Exploradas</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e0e0e0;"></div>
+                    <span>Áreas Desconocidas</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ea4335;"></div>
+                    <span>Obstáculos</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #34a853;"></div>
+                    <span>Posición Actual</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas del mapa -->
+        <div class="map-canvas-container">
+            <div class="map-canvas">
+                <div class="map-placeholder">
+                    <i class="fa-solid fa-map"></i>
+                    <h3>Mapa del Hogar No Disponible</h3>
+                    <p>
+                        Esta funcionalidad permitirá visualizar el mapa del hogar generado por el robot mediante 
+                        tecnología SLAM (Simultaneous Localization and Mapping).
+                    </p>
+                    <p style="margin-top: 1rem;">
+                        Para comenzar a mapear tu hogar, selecciona un robot en línea y presiona el botón 
+                        "Iniciar Mapeado".
+                    </p>
+                    <button class="start-mapping-btn" {% if not robots or not robots[0].is_online %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                        <i class="fa-solid fa-play"></i>
+                        {% if robots and robots[0].is_online %}
+                            Iniciar Mapeado
+                        {% else %}
+                            Robot No Disponible
+                        {% endif %}
+                    </button>
+                    <p style="margin-top: 1.5rem; font-size: 0.85rem; color: #999;">
+                        <i class="fa-solid fa-info-circle"></i> 
+                        El mapeado requiere que el robot esté conectado y en línea
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

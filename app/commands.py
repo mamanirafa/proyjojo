@@ -71,8 +71,9 @@ def create_admin_command(username, email, password):
 @click.option('--name', prompt='Nombre del robot', help='Nombre descriptivo del robot.')
 @click.option('--serial', prompt='Número de serie', help='Número de serie único del robot.')
 @click.option('--username', prompt='Usuario propietario', help='Nombre de usuario del propietario.')
+@click.option('--camera-ip', prompt='IP de la cámara ESP32-CAM', default='', help='IP de la ESP32-CAM (opcional).')
 @click.option('--mqtt-topic', default=None, help='Tópico MQTT base (opcional, se generará automáticamente si no se proporciona).')
-def create_robot_command(name, serial, username, mqtt_topic):
+def create_robot_command(name, serial, username, camera_ip, mqtt_topic):
     """Crea un nuevo robot y lo asocia a un usuario."""
     
     click.echo("Iniciando creación de robot...")
@@ -97,6 +98,7 @@ def create_robot_command(name, serial, username, mqtt_topic):
         name=name,
         serial_number=serial,
         mqtt_topic=mqtt_topic,
+        camera_ip=camera_ip if camera_ip else None,
         user_id=user.id,
         is_active=True,
         is_online=False,
@@ -110,4 +112,6 @@ def create_robot_command(name, serial, username, mqtt_topic):
     click.echo(f"  - Número de serie: {serial}")
     click.echo(f"  - Propietario: {username}")
     click.echo(f"  - Tópico MQTT: {mqtt_topic}")
+    click.echo(f"  - Cámara ESP32-CAM: {camera_ip if camera_ip else 'No configurada'}")
+    click.echo(f"  - Stream URL: {new_robot.camera_stream_url if camera_ip else 'N/A'}")
     click.echo(f"  - ID: {new_robot.id}")

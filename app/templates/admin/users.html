@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1><i class="fas fa-users-cog"></i> Gestión de Usuarios</h1>
+            <p style="color: #666;">Administrar usuarios y permisos del sistema</p>
+        </div>
+        <a href="{{ url_for('admin.index') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Panel
+        </a>
+    </div>
+</div>
+
+<!-- Filtros y Búsqueda -->
+<div style="background: white; padding: 1rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+    <input type="text" id="searchUsers" placeholder="Buscar por nombre de usuario o email..." 
+           style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+</div>
+
+<!-- Tabla de Usuarios -->
+<div style="background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+    {% if users %}
+    <table id="usersTable" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #062F4F; color: white;">
+                <th style="padding: 1rem; text-align: left;">Usuario</th>
+                <th style="padding: 1rem; text-align: left;">Email</th>
+                <th style="padding: 1rem; text-align: left;">Nombre</th>
+                <th style="padding: 1rem; text-align: left;">Roles</th>
+                <th style="padding: 1rem; text-align: center;">Estado</th>
+                <th style="padding: 1rem; text-align: center;">Último Login</th>
+                <th style="padding: 1rem; text-align: center;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr style="border-bottom: 1px solid #dee2e6;" class="user-row">
+                <td style="padding: 1rem;">
+                    <strong>{{ user.username }}</strong>
+                    {% if user.id == current_user.id %}
+                        <span style="background: #813772; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">
+                            TÚ
+                        </span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem; color: #666;">{{ user.email }}</td>
+                <td style="padding: 1rem; color: #666;">
+                    {{ user.first_name or '' }} {{ user.last_name or '' }}
+                    {% if not user.first_name and not user.last_name %}
+                        <span style="color: #999; font-style: italic;">Sin nombre</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem;">
+                    {% for role in user.roles %}
+                        {% if role.name == 'admin' %}
+                            <span style="background: #dc3545; color: white; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.85rem; margin-right: 0.25rem;">
+                                <i class="fas fa-crown"></i> Admin
+                            </span>
+                        {% elif role.name == 'support' %}
+                            <span style="background: #ffc107; color: #000; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.85rem; margin-right: 0.25rem;">
+                                <i class="fas fa-headset"></i> Soporte
+                            </span>
+                        {% else %}
+                            <span style="background: #17a2b8; color: white; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.85rem; margin-right: 0.25rem;">
+                                <i class="fas fa-user"></i> Usuario
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    {% if user.is_active %}
+                        <span style="color: #28a745; font-weight: 600;"><i class="fas fa-check-circle"></i> Activo</span>
+                    {% else %}
+                        <span style="color: #dc3545; font-weight: 600;"><i class="fas fa-times-circle"></i> Inactivo</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem; text-align: center; color: #666; font-size: 0.9rem;">
+                    {% if user.last_login %}
+                        {{ user.last_login.strftime('%d/%m/%Y %H:%M') }}
+                    {% else %}
+                        <span style="color: #999; font-style: italic;">Nunca</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
+                       class="btn-action" style="background: #062F4F; color: white; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; font-size: 0.9rem;">
+                        <i class="fas fa-eye"></i> Ver
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 3rem; text-align: center; color: #666;">
+        <i class="fas fa-users" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+        <p style="font-size: 1.1rem;">No hay usuarios registrados en el sistema.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Búsqueda en tiempo real
+    document.getElementById('searchUsers').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.user-row');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<style>
+    .btn-action:hover {
+        opacity: 0.8;
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

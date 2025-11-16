@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse - JoJo AsisTECH</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+    
+    <!-- Iconos de FontAwesome -->
+    <script src="https://kit.fontawesome.com/8d348586f9.js" crossorigin="anonymous"></script>
+    
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/login.css') }}">
+    <style>
+        .flashes {
+            list-style-type: none;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-width: 100%;
+        }
+        .flashes .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .flashes .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .form-container form {
+            height: auto;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .input-container {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <main id="Register" class="main body">
+        <div class="container" id="container">
+          
+            <div class="form-container sign-in" style="width: 60%; left: 20%;">
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <h1>Crear Cuenta</h1>
+                    
+                    <!-- Bloque para mostrar mensajes flash de Flask -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <ul class="flashes">
+                            {% for category, message in messages %}
+                                <li class="flash-{{ category }}">{{ message }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="input-container">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" placeholder="Nombre de Usuario *" name="username" required 
+                               pattern="[a-zA-Z0-9_]+" title="Solo letras, números y guión bajo">
+                    </div>
+                    
+                    <div class="input-container">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" placeholder="Correo Electrónico *" name="email" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="input-container">
+                            <i class="fa-solid fa-user-tag"></i>
+                            <input type="text" placeholder="Nombre" name="first_name">
+                        </div>
+                        <div class="input-container">
+                            <i class="fa-solid fa-user-tag"></i>
+                            <input type="text" placeholder="Apellido" name="last_name">
+                        </div>
+                    </div>
+                    
+                    <div class="input-container">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" placeholder="Contraseña (mín. 8 caracteres) *" 
+                               name="password" id="password" required minlength="8">
+                    </div>
+                    
+                    <div class="input-container">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" placeholder="Confirmar Contraseña *" 
+                               name="password_confirm" id="password_confirm" required minlength="8">
+                    </div>
+                    
+                    <div style="font-size: 0.85rem; color: #666; margin: 0.5rem 0; text-align: left;">
+                        <p style="margin: 0.3rem 0;"><i class="fa-solid fa-info-circle"></i> Campos marcados con * son obligatorios</p>
+                        <p style="margin: 0.3rem 0;"><i class="fa-solid fa-shield-halved"></i> Tu contraseña debe tener al menos 8 caracteres</p>
+                    </div>
+                    
+                    <button type="submit" style="margin-top: 1rem;">Registrarse</button>
+                    
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">
+                        ¿Ya tienes una cuenta? 
+                        <a href="{{ url_for('auth.login') }}" style="color: #062F4F; font-weight: 600; text-decoration: underline;">Inicia sesión aquí</a>
+                    </p>
+                </form>
+            </div>
+    
+            <div class="toggle-container" style="left: 0; width: 20%; border-radius: 0 50px 50px 0;">
+                <div class="toggle" style="background: linear-gradient(rgba(6, 47, 79, 0.9), rgba(6, 47, 79, 0.8)), url({{ url_for('static', filename='img/Fondo.png') }}); background-size: cover;">
+                    <div class="toggle-panel" style="width: 100%; padding: 1rem;">
+                        <div style="text-align: center;">
+                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo JoJo" style="max-width: 100px; margin-bottom: 1rem;">
+                            <h2 style="font-size: 1.2rem; margin: 0.5rem 0;">JoJo</h2>
+                            <p style="font-size: 0.85rem;">Tu compañero inteligente</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+    
+    <script>
+        // Validar que las contraseñas coincidan
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('password_confirm').value;
+            
+            if (password !== confirm) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden. Por favor verifica.');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

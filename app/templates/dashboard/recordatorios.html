@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block title %}Recordatorios - JoJo AsisTECH{% endblock %}
+
+{% block head_css %}
+    <style>
+        .reminders-container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .reminders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .reminders-header h1 {
+            color: #1E1228;
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .add-reminder-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
+        }
+
+        .add-reminder-btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(66, 133, 244, 0.4);
+        }
+
+        .reminders-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: #1E1228;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .reminders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .reminder-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            position: relative;
+            border-left: 4px solid #4285f4;
+        }
+
+        .reminder-card.medicina {
+            border-left-color: #ea4335;
+        }
+
+        .reminder-card.cita {
+            border-left-color: #fbbc04;
+        }
+
+        .reminder-card.actividad {
+            border-left-color: #34a853;
+        }
+
+        .reminder-card.overdue {
+            border-left-color: #ea4335;
+            background: #fff5f5;
+        }
+
+        .reminder-card.completed {
+            opacity: 0.7;
+            border-left-color: #999;
+        }
+
+        .reminder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .reminder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .reminder-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1E1228;
+            margin: 0;
+        }
+
+        .reminder-category {
+            background: #f0f0f0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .reminder-category.medicina {
+            background: #fee;
+            color: #ea4335;
+        }
+
+        .reminder-category.cita {
+            background: #fffbea;
+            color: #fbbc04;
+        }
+
+        .reminder-category.actividad {
+            background: #e6f4ea;
+            color: #34a853;
+        }
+
+        .reminder-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin: 0.5rem 0;
+            line-height: 1.5;
+        }
+
+        .reminder-time-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .time-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .time-label {
+            font-size: 0.7rem;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+        }
+
+        .time-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1E1228;
+        }
+
+        .reminder-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin: 0.8rem 0;
+        }
+
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .badge.repeat {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge.robot {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge.overdue {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .reminder-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .btn-complete {
+            background: #34a853;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #2d8e47;
+        }
+
+        .btn-delete {
+            background: #ea4335;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c5221f;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .reminders-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .reminders-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .add-reminder-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="reminders-container">
+    <div class="reminders-header">
+        <h1><i class="fa-solid fa-bell"></i> Mis Recordatorios</h1>
+        <a href="{{ url_for('dashboard.nuevo_recordatorio') }}" class="add-reminder-btn">
+            <i class="fa-solid fa-plus"></i> Nuevo Recordatorio
+        </a>
+    </div>
+
+    <!-- Recordatorios Pendientes -->
+    <div class="reminders-section">
+        <h2 class="section-title">
+            <i class="fa-solid fa-clock"></i> Pendientes ({{ pending_reminders|length }})
+        </h2>
+        
+        {% if pending_reminders %}
+            <div class="reminders-grid">
+                {% for reminder in pending_reminders %}
+                <div class="reminder-card {{ reminder.category }} {% if reminder.is_overdue %}overdue{% endif %}">
+                    <div class="reminder-header">
+                        <h3 class="reminder-title">{{ reminder.title }}</h3>
+                        <span class="reminder-category {{ reminder.category }}">
+                            {% if reminder.category == 'medicina' %}<i class="fa-solid fa-pills"></i>{% endif %}
+                            {% if reminder.category == 'cita' %}<i class="fa-solid fa-calendar-check"></i>{% endif %}
+                            {% if reminder.category == 'actividad' %}<i class="fa-solid fa-person-walking"></i>{% endif %}
+                            {{ reminder.category }}
+                        </span>
+                    </div>
+                    
+                    {% if reminder.description %}
+                    <p class="reminder-description">{{ reminder.description }}</p>
+                    {% endif %}
+                    
+                    <div class="reminder-time-info">
+                        <div class="time-item">
+                            <span class="time-label">Fecha</span>
+                            <span class="time-value">{{ reminder.reminder_time.strftime('%d/%m/%Y') }}</span>
+                        </div>
+                        <div class="time-item">
+                            <span class="time-label">Hora</span>
+                            <span class="time-value">{{ reminder.reminder_time.strftime('%H:%M') }}</span>
+                        </div>
+                        <div class="time-item">
+                            <span class="time-label">Estado</span>
+                            <span class="time-value">{{ reminder.time_until }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="reminder-badges">
+                        {% if reminder.repeat != 'once' %}
+                        <span class="badge repeat">
+                            <i class="fa-solid fa-repeat"></i>
+                            {% if reminder.repeat == 'daily' %}Diario{% endif %}
+                            {% if reminder.repeat == 'weekly' %}Semanal{% endif %}
+                            {% if reminder.repeat == 'monthly' %}Mensual{% endif %}
+                        </span>
+                        {% endif %}
+                        
+                        {% if reminder.robot_notification %}
+                        <span class="badge robot">
+                            <i class="fa-solid fa-robot"></i> Notificar a JoJo
+                        </span>
+                        {% endif %}
+                        
+                        {% if reminder.is_overdue %}
+                        <span class="badge overdue">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Vencido
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="reminder-actions">
+                        <form method="POST" action="{{ url_for('dashboard.completar_recordatorio', reminder_id=reminder.id) }}" style="flex: 1;">
+                            <button type="submit" class="action-btn btn-complete">
+                                <i class="fa-solid fa-check"></i> Completar
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('dashboard.eliminar_recordatorio', reminder_id=reminder.id) }}" 
+                              onsubmit="return confirm('¿Estás seguro de eliminar este recordatorio?');" style="flex: 1;">
+                            <button type="submit" class="action-btn btn-delete">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-calendar-check"></i>
+                <h3>No tienes recordatorios pendientes</h3>
+                <p>Crea uno nuevo para organizar tus actividades</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recordatorios Completados -->
+    {% if completed_reminders %}
+    <div class="reminders-section">
+        <h2 class="section-title">
+            <i class="fa-solid fa-check-circle"></i> Completados ({{ completed_reminders|length }})
+        </h2>
+        
+        <div class="reminders-grid">
+            {% for reminder in completed_reminders %}
+            <div class="reminder-card completed {{ reminder.category }}">
+                <div class="reminder-header">
+                    <h3 class="reminder-title">
+                        <i class="fa-solid fa-check"></i> {{ reminder.title }}
+                    </h3>
+                    <span class="reminder-category {{ reminder.category }}">{{ reminder.category }}</span>
+                </div>
+                
+                {% if reminder.description %}
+                <p class="reminder-description">{{ reminder.description }}</p>
+                {% endif %}
+                
+                <div class="reminder-time-info">
+                    <div class="time-item">
+                        <span class="time-label">Completado</span>
+                        <span class="time-value">{{ reminder.completed_at.strftime('%d/%m/%Y %H:%M') if reminder.completed_at else 'N/A' }}</span>
+                    </div>
+                </div>
+                
+                <div class="reminder-actions">
+                    <form method="POST" action="{{ url_for('dashboard.eliminar_recordatorio', reminder_id=reminder.id) }}" 
+                          onsubmit="return confirm('¿Estás seguro de eliminar este recordatorio?');" style="width: 100%;">
+                        <button type="submit" class="action-btn btn-delete">
+                            <i class="fa-solid fa-trash"></i> Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

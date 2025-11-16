@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1><i class="fas fa-cog"></i> Configuración del Sistema</h1>
+            <p style="color: #666;">Ajustes y configuraciones generales</p>
+        </div>
+        <a href="{{ url_for('admin.index') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Panel
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; gap: 1.5rem;">
+    <!-- Configuración de MQTT -->
+    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0; border-bottom: 2px solid #062F4F; padding-bottom: 0.5rem;">
+            <i class="fas fa-network-wired"></i> Configuración MQTT
+        </h2>
+        
+        <div style="background: #e7f3ff; border-left: 4px solid #0c5460; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px;">
+            <p style="margin: 0; color: #0c5460;">
+                <strong>Configuración Actual:</strong> Las configuraciones MQTT se gestionan desde el archivo <code>config.py</code>
+            </p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <label style="display: block; color: #666; font-weight: 600; margin-bottom: 0.5rem;">Broker MQTT</label>
+                <p style="margin: 0; font-size: 1.1rem; font-family: monospace;">{{ config.MQTT_BROKER_URL or 'No configurado' }}</p>
+            </div>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <label style="display: block; color: #666; font-weight: 600; margin-bottom: 0.5rem;">Puerto</label>
+                <p style="margin: 0; font-size: 1.1rem; font-family: monospace;">{{ config.MQTT_BROKER_PORT or 'No configurado' }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Configuración de Robots -->
+    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0; border-bottom: 2px solid #813772; padding-bottom: 0.5rem;">
+            <i class="fas fa-robot"></i> Gestión de Robots
+        </h2>
+        
+        <p style="color: #666; margin-bottom: 1.5rem;">
+            Administra los robots del sistema y su accesibilidad para los usuarios.
+        </p>
+        
+        <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: start; gap: 1rem;">
+                <i class="fas fa-lightbulb" style="color: #856404; font-size: 1.5rem;"></i>
+                <div>
+                    <strong style="color: #856404;">Robots Compartidos</strong>
+                    <p style="color: #856404; margin: 0.5rem 0 0; font-size: 0.95rem;">
+                        Los robots públicos están disponibles automáticamente para todos los usuarios comunes.
+                        No es necesario asignarlos manualmente.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('admin.robots') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #813772; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            <i class="fas fa-cogs"></i> Gestionar Robots
+        </a>
+    </div>
+    
+    <!-- Configuración de Usuarios -->
+    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 0.5rem;">
+            <i class="fas fa-users-cog"></i> Gestión de Usuarios
+        </h2>
+        
+        <p style="color: #666; margin-bottom: 1.5rem;">
+            Administra usuarios, roles y permisos del sistema.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+                <i class="fas fa-crown" style="font-size: 2rem; opacity: 0.8; margin-bottom: 0.5rem;"></i>
+                <h3 style="margin: 0.5rem 0;">Admin</h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">Control total del sistema</p>
+            </div>
+            
+            <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 8px; color: white;">
+                <i class="fas fa-headset" style="font-size: 2rem; opacity: 0.8; margin-bottom: 0.5rem;"></i>
+                <h3 style="margin: 0.5rem 0;">Soporte</h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">Gestión de usuarios y robots</p>
+            </div>
+            
+            <div style="padding: 1.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 8px; color: white;">
+                <i class="fas fa-user" style="font-size: 2rem; opacity: 0.8; margin-bottom: 0.5rem;"></i>
+                <h3 style="margin: 0.5rem 0;">Usuario</h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">Acceso a funciones básicas</p>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('admin.users') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #28a745; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            <i class="fas fa-users"></i> Gestionar Usuarios
+        </a>
+    </div>
+    
+    <!-- Información del Sistema -->
+    <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 0.5rem;">
+            <i class="fas fa-info-circle"></i> Información del Sistema
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <label style="display: block; color: #666; font-weight: 600; margin-bottom: 0.5rem;">Versión</label>
+                <p style="margin: 0; font-size: 1.1rem;">JoJo AsisTECH v1.0</p>
+            </div>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <label style="display: block; color: #666; font-weight: 600; margin-bottom: 0.5rem;">Framework</label>
+                <p style="margin: 0; font-size: 1.1rem;">Flask 3.1.2</p>
+            </div>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <label style="display: block; color: #666; font-weight: 600; margin-bottom: 0.5rem;">Base de Datos</label>
+                <p style="margin: 0; font-size: 1.1rem;">SQLite</p>
+            </div>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <label style="display: block; color: #666; font-weight: 600; margin-bottom: 0.5rem;">Protocolo</label>
+                <p style="margin: 0; font-size: 1.1rem;">MQTT</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    a[href]:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

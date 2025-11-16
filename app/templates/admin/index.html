@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <h1><i class="fas fa-shield-halved"></i> Panel de Administración</h1>
+    <p style="color: #666;">Gestión y configuración del sistema</p>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0; color: #666; font-size: 0.9rem;">Total Usuarios</h3>
+                <p style="margin: 0.5rem 0 0; font-size: 2rem; font-weight: bold; color: #062F4F;">{{ total_users }}</p>
+            </div>
+            <i class="fas fa-users" style="font-size: 2.5rem; color: #062F4F; opacity: 0.2;"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0; color: #666; font-size: 0.9rem;">Usuarios Activos</h3>
+                <p style="margin: 0.5rem 0 0; font-size: 2rem; font-weight: bold; color: #28a745;">{{ active_users }}</p>
+            </div>
+            <i class="fas fa-user-check" style="font-size: 2.5rem; color: #28a745; opacity: 0.2;"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0; color: #666; font-size: 0.9rem;">Total Robots</h3>
+                <p style="margin: 0.5rem 0 0; font-size: 2rem; font-weight: bold; color: #813772;">{{ total_robots }}</p>
+            </div>
+            <i class="fas fa-robot" style="font-size: 2.5rem; color: #813772; opacity: 0.2;"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0; color: #666; font-size: 0.9rem;">Robots Públicos</h3>
+                <p style="margin: 0.5rem 0 0; font-size: 2rem; font-weight: bold; color: #17a2b8;">{{ public_robots }}</p>
+            </div>
+            <i class="fas fa-globe" style="font-size: 2.5rem; color: #17a2b8; opacity: 0.2;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos Rápidos -->
+<div class="quick-actions" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <h2 style="margin-top: 0;"><i class="fas fa-bolt"></i> Accesos Rápidos</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <a href="{{ url_for('admin.users') }}" style="display: flex; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #062F4F; transition: all 0.3s;">
+            <i class="fas fa-users-cog" style="font-size: 1.5rem; margin-right: 1rem;"></i>
+            <span style="font-weight: 600;">Gestión de Usuarios</span>
+        </a>
+        
+        <a href="{{ url_for('admin.robots') }}" style="display: flex; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #813772; transition: all 0.3s;">
+            <i class="fas fa-robot" style="font-size: 1.5rem; margin-right: 1rem;"></i>
+            <span style="font-weight: 600;">Gestión de Robots</span>
+        </a>
+        
+        <a href="{{ url_for('admin.config') }}" style="display: flex; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; text-decoration: none; color: #28a745; transition: all 0.3s;">
+            <i class="fas fa-cog" style="font-size: 1.5rem; margin-right: 1rem;"></i>
+            <span style="font-weight: 600;">Configuración</span>
+        </a>
+    </div>
+</div>
+
+<!-- Usuarios Recientes -->
+<div class="recent-users" style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h2 style="margin-top: 0;"><i class="fas fa-clock"></i> Usuarios Recientes</h2>
+    {% if recent_users %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8f9fa;">
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Usuario</th>
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Email</th>
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Roles</th>
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Estado</th>
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Registro</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in recent_users %}
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 0.75rem;">
+                    <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" style="color: #062F4F; text-decoration: none; font-weight: 600;">
+                        {{ user.username }}
+                    </a>
+                </td>
+                <td style="padding: 0.75rem;">{{ user.email }}</td>
+                <td style="padding: 0.75rem;">
+                    {% for role in user.roles %}
+                        <span style="background: #062F4F; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-right: 0.25rem;">
+                            {{ role.name }}
+                        </span>
+                    {% endfor %}
+                </td>
+                <td style="padding: 0.75rem;">
+                    {% if user.is_active %}
+                        <span style="color: #28a745;"><i class="fas fa-check-circle"></i> Activo</span>
+                    {% else %}
+                        <span style="color: #dc3545;"><i class="fas fa-times-circle"></i> Inactivo</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 0.75rem; color: #666; font-size: 0.9rem;">
+                    {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666; text-align: center; padding: 2rem;">No hay usuarios registrados aún.</p>
+    {% endif %}
+</div>
+
+<style>
+    .quick-actions a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

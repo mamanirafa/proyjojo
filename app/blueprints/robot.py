@@ -11,8 +11,14 @@ robot_bp = Blueprint('robot', __name__)
 @login_required
 def select():
     """Muestra la lista de robots disponibles para el usuario."""
-    user_robots = current_user.robots
-    return render_template('robot/select.html', robots=user_robots, title="Mis Robots")
+    # Usuarios comunes ven todos los robots públicos
+    # Admins y soporte también pueden ver todos
+    if current_user.is_admin() or current_user.is_support():
+        user_robots = Robot.query.all()
+    else:
+        user_robots = Robot.query.filter_by(is_public=True).all()
+    
+    return render_template('robot/select.html', robots=user_robots, title="Robots Disponibles")
 
 @robot_bp.route('/robot/<int:robot_id>/control')
 @login_required
@@ -20,8 +26,8 @@ def control(robot_id):
     """Página de control de un robot específico."""
     robot = Robot.query.get_or_404(robot_id)
     
-    # Verificar que el robot pertenece al usuario actual
-    if robot.user_id != current_user.id:
+    # Verificar permisos: admin/support tienen acceso completo, usuarios comunes solo a robots públicos
+    if not (current_user.is_admin() or current_user.is_support() or robot.is_public):
         flash('No tienes permiso para controlar este robot.', 'danger')
         return redirect(url_for('robot.select'))
     

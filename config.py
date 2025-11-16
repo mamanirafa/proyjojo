@@ -18,9 +18,13 @@ class Config:
         'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance', 'jojo.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Configuración MQTT
-    MQTT_BROKER_HOST = os.environ.get('MQTT_BROKER_HOST') or 'localhost'
+    # Configuración MQTT (Broker en Raspberry Pi 192.168.1.100)
+    MQTT_BROKER_HOST = os.environ.get('MQTT_BROKER_HOST') or '192.168.1.100'
     MQTT_BROKER_PORT = int(os.environ.get('MQTT_BROKER_PORT') or 1883)
     MQTT_USERNAME = os.environ.get('MQTT_USERNAME') or ''
     MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD') or ''
     MQTT_KEEPALIVE = int(os.environ.get('MQTT_KEEPALIVE') or 60)
+    
+    # Configuración ESP32-CAM (Streaming directo)
+    ESP32_CAM_IP = os.environ.get('ESP32_CAM_IP') or '192.168.1.103'
+    ESP32_CAM_STREAM_URL = os.environ.get('ESP32_CAM_STREAM_URL') or 'http://192.168.1.103/stream'

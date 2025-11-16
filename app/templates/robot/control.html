@@ -272,10 +272,16 @@
         <!-- Panel central: Video -->
         <div class="control-panel">
             <h2><i class="fa-solid fa-video"></i> Transmisión en vivo</h2>
-            <div class="video-feed">
-                <div style="text-align: center;">
+            <div class="video-feed" id="video-container">
+                <img id="video-stream" 
+                     src="" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: none;"
+                     onerror="handleVideoError()"
+                     onload="handleVideoLoad()">
+                <div id="video-placeholder" style="text-align: center;">
                     <i class="fa-solid fa-video-slash" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <p>Cámara desconectada</p>
+                    <p>Conectando a la cámara...</p>
+                    <small style="color: #aaa;">ESP32-CAM</small>
                 </div>
             </div>
         </div>
@@ -321,8 +327,39 @@
 {% block body_js %}
     <script src="{{ url_for('static', filename='js/robot_control.js') }}"></script>
     <script>
-        // Pasar el ID del robot al JavaScript
+        // Pasar el ID del robot y configuración al JavaScript
         const ROBOT_ID = {{ robot.id }};
         const MQTT_TOPIC = "{{ robot.mqtt_topic }}";
+        const ESP32_CAM_URL = "{{ robot.camera_stream_url or 'http://192.168.1.103/stream' }}";
+        const ROBOT_NAME = "{{ robot.name }}";
+        
+        // Función para manejar errores de carga del video
+        function handleVideoError() {
+            document.getElementById('video-stream').style.display = 'none';
+            document.getElementById('video-placeholder').style.display = 'block';
+            document.getElementById('video-placeholder').innerHTML = `
+                <i class="fa-solid fa-video-slash" style="font-size: 3rem; margin-bottom: 1rem; color: #dc3545;"></i>
+                <p>Cámara desconectada</p>
+                <small style="color: #aaa;">ESP32-CAM: {{ robot.camera_ip or 'No configurada' }}</small>
+            `;
+        }
+        
+        // Función cuando el video carga correctamente
+        function handleVideoLoad() {
+            document.getElementById('video-stream').style.display = 'block';
+            document.getElementById('video-placeholder').style.display = 'none';
+        }
+        
+        // Intentar conectar al stream de la cámara
+        setTimeout(() => {
+            {% if robot.camera_ip %}
+            const videoStream = document.getElementById('video-stream');
+            videoStream.src = ESP32_CAM_URL + '?t=' + new Date().getTime(); // Evitar caché
+            console.log('Conectando a cámara:', ESP32_CAM_URL);
+            {% else %}
+            console.warn('Robot sin cámara configurada');
+            handleVideoError();
+            {% endif %}
+        }, 1000);
     </script>
 {% endblock %}

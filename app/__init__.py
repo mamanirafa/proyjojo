@@ -44,11 +44,12 @@ def create_app(config_class=Config):
 
     # 6. Registro de los Blueprints (módulos de la aplicación)
     with app.app_context():
-        from .blueprints import auth, dashboard, robot, api
+        from .blueprints import auth, dashboard, robot, api, admin
         app.register_blueprint(auth.auth_bp)
         app.register_blueprint(dashboard.dashboard_bp)
         app.register_blueprint(robot.robot_bp)
         app.register_blueprint(api.api_bp)
+        app.register_blueprint(admin.admin_bp)
 
     # 7. Registro de los Comandos CLI
     from .commands import seed_roles_command, create_admin_command, create_robot_command

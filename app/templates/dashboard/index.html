@@ -1,13 +1,210 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard - JoJo AsisTECH{% endblock %}
 
 {% block head_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+        
+        .stat-icon.robots {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stat-icon.reminders {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .stat-icon.online {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .stat-icon.alerts {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .stat-info h3 {
+            margin: 0;
+            font-size: 2rem;
+            color: #1E1228;
+        }
+        
+        .stat-info p {
+            margin: 0.2rem 0 0 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .reminders-preview {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        
+        .reminders-preview h3 {
+            margin: 0 0 1rem 0;
+            color: #1E1228;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .reminder-item {
+            padding: 0.8rem;
+            border-left: 3px solid #4285f4;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 0.8rem;
+        }
+        
+        .reminder-item.medicina {
+            border-left-color: #ea4335;
+        }
+        
+        .reminder-item.cita {
+            border-left-color: #fbbc04;
+        }
+        
+        .reminder-item.actividad {
+            border-left-color: #34a853;
+        }
+        
+        .reminder-item h4 {
+            margin: 0 0 0.3rem 0;
+            font-size: 0.95rem;
+            color: #1E1228;
+        }
+        
+        .reminder-item p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .view-all-link {
+            color: #4285f4;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+        
+        .alert-banner {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 12px rgba(250, 112, 154, 0.3);
+        }
+        
+        .alert-banner i {
+            font-size: 1.5rem;
+        }
+        
+        .alert-banner strong {
+            font-size: 1.1rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
 <section class="dashboard-section">
+    <!-- Banner de alertas si hay recordatorios vencidos -->
+    {% if overdue_reminders_count > 0 %}
+    <div class="alert-banner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>
+            <strong>¡Atención!</strong>
+            <p style="margin: 0.2rem 0 0 0;">Tienes {{ overdue_reminders_count }} recordatorio{{ 's' if overdue_reminders_count > 1 else '' }} vencido{{ 's' if overdue_reminders_count > 1 else '' }}. 
+                <a href="{{ url_for('dashboard.recordatorios') }}" style="color: white; text-decoration: underline;">Ver ahora</a>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon robots">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ active_robots_count }}</h3>
+                <p>Robot{{ 's' if active_robots_count != 1 else '' }} Activo{{ 's' if active_robots_count != 1 else '' }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon online">
+                <i class="fa-solid fa-wifi"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ online_robots_count }}</h3>
+                <p>En Línea</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon reminders">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ upcoming_reminders|length }}</h3>
+                <p>Próximos Recordatorios</p>
+            </div>
+        </div>
+        
+        {% if overdue_reminders_count > 0 %}
+        <div class="stat-card">
+            <div class="stat-icon alerts">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ overdue_reminders_count }}</h3>
+                <p>Vencidos</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
     <div class="top-row">
         <div class="logo-container">
             <img src="{{ url_for('static', filename='img/LogodeAsisTECH.png') }}" alt="Logo AsisTECH">
@@ -16,30 +213,80 @@
             <a href="{{ url_for('robot.select') }}" class="action-btn" style="text-decoration: none; color: inherit;">
                 <i class="fa-solid fa-robot"></i><p>Buscar<br>mi Asistente</p>
             </a>
-            <div class="action-btn"><i class="fa-solid fa-video"></i><p>Videollamada</p></div>
-            <div class="action-btn"><i class="fa-solid fa-house"></i><p>Hogar</p></div>
-            <div class="action-btn"><i class="fa-solid fa-phone"></i><p>Llamada</p></div>
-            <div class="action-btn"><i class="fa-solid fa-heart-pulse"></i><p>Estado</p></div>
+            <a href="#" class="action-btn" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-video"></i><p>Videollamada</p>
+            </a>
+            <a href="{{ url_for('dashboard.mapeado') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-house"></i><p>Mapeado<br>Hogar</p>
+            </a>
+            <a href="#" class="action-btn" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-phone"></i><p>Llamada</p>
+            </a>
+            <a href="{{ url_for('dashboard.recordatorios') }}" class="action-btn" style="text-decoration: none; color: inherit;">
+                <i class="fa-solid fa-heart-pulse"></i><p>Recordatorios</p>
+            </a>
         </div>
     </div>
 
     <div class="bottom-row">
         <div class="info-column">
-            <div class="card"><img src="{{ url_for('static', filename='img/AduMays.png') }}"><p>Aprende a cómo utilizar JoJo a su máximo potencial <a href="#" class="card-link">ver más...</a></p></div>
-            <div class="card"><img src="{{ url_for('static', filename='img/AduMays.png') }}"><p>Aprende a cómo utilizar JoJo a su máximo potencial <a href="#" class="card-link">ver más...</a></p></div>
+            <!-- Preview de recordatorios próximos -->
+            {% if upcoming_reminders %}
+            <div class="reminders-preview">
+                <h3>
+                    <span><i class="fa-solid fa-clock"></i> Próximos Recordatorios</span>
+                    <a href="{{ url_for('dashboard.recordatorios') }}" class="view-all-link">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+                </h3>
+                {% for reminder in upcoming_reminders[:3] %}
+                <div class="reminder-item {{ reminder.category }}">
+                    <h4>{{ reminder.title }}</h4>
+                    <p>
+                        <i class="fa-solid fa-clock"></i> {{ reminder.reminder_time.strftime('%d/%m/%Y %H:%M') }} - {{ reminder.time_until }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Robots del usuario -->
+            {% if robots %}
+            <div class="reminders-preview">
+                <h3>
+                    <span><i class="fa-solid fa-robot"></i> Mis Robots</span>
+                    <a href="{{ url_for('robot.select') }}" class="view-all-link">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
+                </h3>
+                {% for robot in robots[:3] %}
+                <div class="reminder-item">
+                    <h4>{{ robot.name }} - {{ robot.serial_number }}</h4>
+                    <p>
+                        {% if robot.is_online %}
+                            <i class="fa-solid fa-circle" style="color: #34a853;"></i> En línea
+                        {% else %}
+                            <i class="fa-solid fa-circle" style="color: #ea4335;"></i> Desconectado
+                        {% endif %}
+                        | Batería: {{ robot.battery_level }}%
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
+        
         <div class="tip-column">
             <div class="card">
                 <div class="tip-content">
-                    <img src="{{ url_for('static', filename='img/AduMay.png') }}">
+                    <img src="{{ url_for('static', filename='img/AduMay.png') }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
                     <div>
-                        <h3>Sabias Qué</h3>
+                        <h3>Sabías Qué</h3>
                         <p>La soledad afecta profundamente a los adultos mayores, perjudicando su salud física y mental. Este sentimiento no deseado aumenta el riesgo de depresión, ansiedad y enfermedades cardiovasculares.</p>
                     </div>
                 </div>
             </div>
             <div class="card">
-                <p>La soledad y el aislamiento social en los adultos mayores se han convertido en un problema de salud pública mundial. Diversas investigaciones han demostrado que ambas condiciones tienen efectos físicos y psicológicos profundos, capaces de reducir la esperanza de vida y deteriorar la salud general. Estudios recientes muestran una relación directa entre la soledad y el aumento del riesgo de mortalidad. De hecho, se estima que el aislamiento social incrementa en un 26% el riesgo de muerte por cualquier causa, un impacto comparable al del tabaquismo o la obesidad. Según la Organización Mundial de la Salud, la soledad estuvo asociada a más de 871.000 muertes anuales en el mundo entre 2014 y 2019.</p>
+                <h3 style="color: #1E1228; margin-top: 0;">Impacto de la Soledad en Adultos Mayores</h3>
+                <p>La soledad y el aislamiento social en los adultos mayores se han convertido en un problema de salud pública mundial. Diversas investigaciones han demostrado que ambas condiciones tienen efectos físicos y psicológicos profundos, capaces de reducir la esperanza de vida y deteriorar la salud general.</p>
+                <p style="margin-top: 1rem;">Estudios recientes muestran una relación directa entre la soledad y el aumento del riesgo de mortalidad. De hecho, se estima que el aislamiento social incrementa en un 26% el riesgo de muerte por cualquier causa, un impacto comparable al del tabaquismo o la obesidad.</p>
+                <p style="margin-top: 1rem; font-style: italic; color: #666;">Según la Organización Mundial de la Salud, la soledad estuvo asociada a más de 871.000 muertes anuales en el mundo entre 2014 y 2019.</p>
             </div>
         </div>
     </div>
