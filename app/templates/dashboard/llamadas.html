@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <h1><i class="fas fa-phone-volume"></i> Llamadas de Video</h1>
+    <p style="color: #666;">Videollamada con tu robot JoJo</p>
+</div>
+
+<!-- Selector de Robot -->
+<div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+    <h3 style="margin-top: 0;"><i class="fas fa-robot"></i> Seleccionar Robot</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        {% for robot in robots %}
+        <div class="robot-card" data-robot-id="{{ robot.id }}" data-robot-name="{{ robot.name }}" data-camera-url="{{ robot.camera_stream_url }}"
+             style="padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-robot" style="font-size: 1.5rem; color: #813772;"></i>
+                <strong>{{ robot.name }}</strong>
+            </div>
+            {% if robot.is_online %}
+                <span style="color: #28a745; font-size: 0.9rem;">
+                    <i class="fas fa-circle" style="font-size: 0.6rem;"></i> En línea
+                </span>
+            {% else %}
+                <span style="color: #dc3545; font-size: 0.9rem;">
+                    <i class="fas fa-circle" style="font-size: 0.6rem;"></i> Desconectado
+                </span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <p id="selectedRobotInfo" style="margin-top: 1rem; color: #666; font-style: italic;">
+        Selecciona un robot para iniciar la llamada
+    </p>
+</div>
+
+<!-- Interfaz de Videollamada -->
+<div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+        <!-- Video Principal (Robot) -->
+        <div>
+            <div style="position: relative; background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 16/9;">
+                <video id="robotVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                    <source id="robotVideoSource" src="" type="application/x-mpegURL">
+                </video>
+                
+                <!-- Overlay cuando no hay llamada -->
+                <div id="noCallOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); color: white;">
+                    <i class="fas fa-video-slash" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p style="font-size: 1.2rem; margin: 0;">Selecciona un robot e inicia la llamada</p>
+                </div>
+                
+                <!-- Video propio (PiP) -->
+                <div id="localVideoContainer" style="position: absolute; bottom: 1rem; right: 1rem; width: 200px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: none;">
+                    <video id="localVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                </div>
+                
+                <!-- Info del robot -->
+                <div id="robotInfo" style="position: absolute; top: 1rem; left: 1rem; background: rgba(0,0,0,0.7); padding: 0.75rem 1rem; border-radius: 8px; color: white; display: none;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-robot"></i>
+                        <span id="robotNameDisplay">Robot</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controles -->
+            <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
+                <button id="startCallBtn" class="call-btn" style="background: #28a745; color: white; border: none; padding: 1rem 2rem; border-radius: 50px; cursor: pointer; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s;">
+                    <i class="fas fa-phone"></i> Iniciar Llamada
+                </button>
+                
+                <button id="endCallBtn" class="call-btn" style="background: #dc3545; color: white; border: none; padding: 1rem 2rem; border-radius: 50px; cursor: pointer; font-size: 1rem; font-weight: 600; display: none; align-items: center; gap: 0.5rem; transition: all 0.3s;">
+                    <i class="fas fa-phone-slash"></i> Finalizar
+                </button>
+                
+                <button id="toggleMicBtn" class="control-btn" disabled style="background: #6c757d; color: white; border: none; padding: 1rem; border-radius: 50%; cursor: pointer; width: 60px; height: 60px; font-size: 1.2rem; transition: all 0.3s;">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                
+                <button id="toggleVideoBtn" class="control-btn" disabled style="background: #6c757d; color: white; border: none; padding: 1rem; border-radius: 50%; cursor: pointer; width: 60px; height: 60px; font-size: 1.2rem; transition: all 0.3s;">
+                    <i class="fas fa-video"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Panel de Estado -->
+        <div>
+            <h3 style="margin-top: 0;"><i class="fas fa-info-circle"></i> Estado de la Llamada</h3>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-signal" style="color: #17a2b8;"></i>
+                    <strong>Estado:</strong>
+                </div>
+                <p id="callStatus" style="margin: 0; color: #666;">Desconectado</p>
+            </div>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-microphone" style="color: #28a745;"></i>
+                    <strong>Micrófono:</strong>
+                </div>
+                <p id="micStatus" style="margin: 0; color: #666;">Desactivado</p>
+            </div>
+            
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-video" style="color: #813772;"></i>
+                    <strong>Cámara:</strong>
+                </div>
+                <p id="videoStatus" style="margin: 0; color: #666;">Desactivada</p>
+            </div>
+            
+            <!-- Información -->
+            <div style="background: #e7f3ff; border-left: 4px solid #0c5460; padding: 1rem; border-radius: 4px; margin-top: 1.5rem;">
+                <p style="margin: 0; color: #0c5460; font-size: 0.9rem;">
+                    <strong>Nota:</strong> Asegúrate de que el robot esté en línea antes de iniciar la llamada.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .robot-card:hover {
+        border-color: #813772;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(129, 55, 114, 0.2);
+    }
+    
+    .robot-card.selected {
+        border-color: #813772;
+        background: #f8f0f7;
+    }
+    
+    .call-btn:hover:not(:disabled) {
+        opacity: 0.9;
+        transform: scale(1.05);
+    }
+    
+    .control-btn:hover:not(:disabled) {
+        transform: scale(1.1);
+    }
+    
+    .control-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .control-btn.active {
+        background: #28a745;
+    }
+    
+    .control-btn.muted {
+        background: #dc3545;
+    }
+</style>
+
+<script>
+let selectedRobot = null;
+let localStream = null;
+let isCallActive = false;
+
+// Selección de robot
+document.querySelectorAll('.robot-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.robot-card').forEach(c => c.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        selectedRobot = {
+            id: this.dataset.robotId,
+            name: this.dataset.robotName,
+            cameraUrl: this.dataset.cameraUrl
+        };
+        
+        document.getElementById('selectedRobotInfo').textContent = `Robot seleccionado: ${selectedRobot.name}`;
+        document.getElementById('selectedRobotInfo').style.color = '#28a745';
+        document.getElementById('selectedRobotInfo').style.fontStyle = 'normal';
+    });
+});
+
+// Iniciar llamada
+document.getElementById('startCallBtn').addEventListener('click', async function() {
+    if (!selectedRobot) {
+        alert('Por favor selecciona un robot primero');
+        return;
+    }
+    
+    try {
+        // Solicitar acceso a cámara y micrófono
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: true 
+        });
+        
+        // Mostrar video local
+        document.getElementById('localVideo').srcObject = localStream;
+        document.getElementById('localVideoContainer').style.display = 'block';
+        
+        // Cargar stream del robot
+        if (selectedRobot.cameraUrl) {
+            document.getElementById('robotVideoSource').src = selectedRobot.cameraUrl;
+            document.getElementById('robotVideo').load();
+        }
+        
+        // Actualizar UI
+        isCallActive = true;
+        document.getElementById('noCallOverlay').style.display = 'none';
+        document.getElementById('robotInfo').style.display = 'block';
+        document.getElementById('robotNameDisplay').textContent = selectedRobot.name;
+        document.getElementById('startCallBtn').style.display = 'none';
+        document.getElementById('endCallBtn').style.display = 'flex';
+        document.getElementById('toggleMicBtn').disabled = false;
+        document.getElementById('toggleVideoBtn').disabled = false;
+        document.getElementById('toggleMicBtn').classList.add('active');
+        document.getElementById('toggleVideoBtn').classList.add('active');
+        
+        // Actualizar estado
+        document.getElementById('callStatus').textContent = 'Conectado con ' + selectedRobot.name;
+        document.getElementById('callStatus').style.color = '#28a745';
+        document.getElementById('micStatus').textContent = 'Activado';
+        document.getElementById('micStatus').style.color = '#28a745';
+        document.getElementById('videoStatus').textContent = 'Activada';
+        document.getElementById('videoStatus').style.color = '#28a745';
+        
+    } catch (error) {
+        console.error('Error al iniciar la llamada:', error);
+        alert('Error al acceder a la cámara/micrófono. Por favor verifica los permisos.');
+    }
+});
+
+// Finalizar llamada
+document.getElementById('endCallBtn').addEventListener('click', function() {
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
+    isCallActive = false;
+    document.getElementById('localVideoContainer').style.display = 'none';
+    document.getElementById('noCallOverlay').style.display = 'flex';
+    document.getElementById('robotInfo').style.display = 'none';
+    document.getElementById('startCallBtn').style.display = 'flex';
+    document.getElementById('endCallBtn').style.display = 'none';
+    document.getElementById('toggleMicBtn').disabled = true;
+    document.getElementById('toggleVideoBtn').disabled = true;
+    document.getElementById('toggleMicBtn').classList.remove('active', 'muted');
+    document.getElementById('toggleVideoBtn').classList.remove('active', 'muted');
+    
+    document.getElementById('callStatus').textContent = 'Desconectado';
+    document.getElementById('callStatus').style.color = '#666';
+    document.getElementById('micStatus').textContent = 'Desactivado';
+    document.getElementById('micStatus').style.color = '#666';
+    document.getElementById('videoStatus').textContent = 'Desactivada';
+    document.getElementById('videoStatus').style.color = '#666';
+});
+
+// Toggle micrófono
+document.getElementById('toggleMicBtn').addEventListener('click', function() {
+    if (!localStream) return;
+    
+    const audioTrack = localStream.getAudioTracks()[0];
+    if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        
+        if (audioTrack.enabled) {
+            this.classList.add('active');
+            this.classList.remove('muted');
+            this.innerHTML = '<i class="fas fa-microphone"></i>';
+            document.getElementById('micStatus').textContent = 'Activado';
+            document.getElementById('micStatus').style.color = '#28a745';
+        } else {
+            this.classList.remove('active');
+            this.classList.add('muted');
+            this.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+            document.getElementById('micStatus').textContent = 'Silenciado';
+            document.getElementById('micStatus').style.color = '#dc3545';
+        }
+    }
+});
+
+// Toggle video
+document.getElementById('toggleVideoBtn').addEventListener('click', function() {
+    if (!localStream) return;
+    
+    const videoTrack = localStream.getVideoTracks()[0];
+    if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        
+        if (videoTrack.enabled) {
+            this.classList.add('active');
+            this.classList.remove('muted');
+            this.innerHTML = '<i class="fas fa-video"></i>';
+            document.getElementById('videoStatus').textContent = 'Activada';
+            document.getElementById('videoStatus').style.color = '#28a745';
+        } else {
+            this.classList.remove('active');
+            this.classList.add('muted');
+            this.innerHTML = '<i class="fas fa-video-slash"></i>';
+            document.getElementById('videoStatus').textContent = 'Desactivada';
+            document.getElementById('videoStatus').style.color = '#dc3545';
+        }
+    }
+});
+</script>
+{% endblock %}

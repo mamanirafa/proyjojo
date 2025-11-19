@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1><i class="fas fa-user-edit"></i> Editar Contacto</h1>
+            <p style="color: #666;">Modificar información de {{ contact.name }}</p>
+        </div>
+        <a href="{{ url_for('dashboard.contactos') }}" style="background: #6c757d; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto;">
+    <form method="POST" action="{{ url_for('dashboard.editar_contacto', contact_id=contact.id) }}">
+        
+        <!-- Información Básica -->
+        <div style="margin-bottom: 2rem;">
+            <h3 style="border-bottom: 2px solid #062F4F; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                <i class="fas fa-user"></i> Información Básica
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #062F4F;">
+                        Nombre Completo <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="text" name="name" required value="{{ contact.name }}"
+                           style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #062F4F;">
+                        Teléfono <span style="color: #dc3545;">*</span>
+                    </label>
+                    <input type="tel" name="phone" required value="{{ contact.phone }}"
+                           style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #062F4F;">
+                    Correo Electrónico
+                </label>
+                <input type="email" name="email" value="{{ contact.email or '' }}"
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #062F4F;">
+                    Dirección
+                </label>
+                <input type="text" name="address" value="{{ contact.address or '' }}"
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            </div>
+        </div>
+        
+        <!-- Clasificación -->
+        <div style="margin-bottom: 2rem;">
+            <h3 style="border-bottom: 2px solid #813772; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                <i class="fas fa-tag"></i> Clasificación
+            </h3>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #062F4F;">
+                    Relación
+                </label>
+                <select name="relationship" 
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+                    <option value="familia" {% if contact.relationship == 'familia' %}selected{% endif %}>👨‍👩‍👧‍👦 Familia</option>
+                    <option value="amigo" {% if contact.relationship == 'amigo' %}selected{% endif %}>👥 Amigo</option>
+                    <option value="medico" {% if contact.relationship == 'medico' %}selected{% endif %}>⚕️ Médico / Salud</option>
+                    <option value="emergencia" {% if contact.relationship == 'emergencia' %}selected{% endif %}>🚨 Emergencia</option>
+                    <option value="otro" {% if contact.relationship == 'otro' %}selected{% endif %}>📋 Otro</option>
+                </select>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <label style="display: flex; align-items: center; padding: 1rem; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; cursor: pointer;">
+                    <input type="checkbox" name="is_emergency" {% if contact.is_emergency %}checked{% endif %}
+                           style="width: 20px; height: 20px; margin-right: 0.75rem;">
+                    <div>
+                        <strong style="color: #856404;">🚨 Contacto de Emergencia</strong>
+                        <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: #856404;">Marcado rápido prioritario</p>
+                    </div>
+                </label>
+                
+                <label style="display: flex; align-items: center; padding: 1rem; background: #fff3e6; border: 2px solid #ffc107; border-radius: 8px; cursor: pointer;">
+                    <input type="checkbox" name="is_favorite" {% if contact.is_favorite %}checked{% endif %}
+                           style="width: 20px; height: 20px; margin-right: 0.75rem;">
+                    <div>
+                        <strong style="color: #856404;">⭐ Favorito</strong>
+                        <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: #856404;">Acceso rápido</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Notas -->
+        <div style="margin-bottom: 2rem;">
+            <h3 style="border-bottom: 2px solid #28a745; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                <i class="fas fa-sticky-note"></i> Notas Adicionales
+            </h3>
+            
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #062F4F;">
+                    Notas
+                </label>
+                <textarea name="notes" rows="4"
+                          style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; resize: vertical;">{{ contact.notes or '' }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Botones -->
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; border-top: 1px solid #dee2e6; padding-top: 1.5rem;">
+            <a href="{{ url_for('dashboard.contactos') }}" 
+               style="padding: 0.75rem 2rem; border: 2px solid #6c757d; color: #6c757d; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    style="padding: 0.75rem 2rem; background: #17a2b8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;">
+                <i class="fas fa-save"></i> Actualizar Contacto
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #062F4F;
+        box-shadow: 0 0 0 3px rgba(6, 47, 79, 0.1);
+    }
+    
+    button[type="submit"]:hover {
+        background: #138496;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}

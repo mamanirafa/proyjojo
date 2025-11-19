@@ -1,0 +1,98 @@
+<div class="contact-card" style="display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center; padding: 1.5rem; background: #f8f9fa; border-radius: 10px; border: 2px solid #dee2e6; transition: all 0.3s;">
+    
+    <!-- Avatar/Icono -->
+    <div style="width: 60px; height: 60px; border-radius: 50%; background: {{ contact.relationship_color }}; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+        <i class="fas {{ contact.relationship_icon }}"></i>
+    </div>
+    
+    <!-- Información del Contacto -->
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+            <h3 style="margin: 0; color: #062F4F;">{{ contact.name }}</h3>
+            
+            {% if contact.is_favorite %}
+            <i class="fas fa-star" style="color: #ffc107;" title="Favorito"></i>
+            {% endif %}
+            
+            {% if contact.is_emergency %}
+            <span style="background: #dc3545; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                <i class="fas fa-exclamation-triangle"></i> EMERGENCIA
+            </span>
+            {% endif %}
+        </div>
+        
+        <div style="display: grid; gap: 0.25rem; color: #666;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-phone" style="color: {{ contact.relationship_color }}; width: 16px;"></i>
+                <strong style="font-family: monospace;">{{ contact.formatted_phone }}</strong>
+            </div>
+            
+            {% if contact.email %}
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-envelope" style="color: {{ contact.relationship_color }}; width: 16px;"></i>
+                <span>{{ contact.email }}</span>
+            </div>
+            {% endif %}
+            
+            {% if contact.address %}
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-map-marker-alt" style="color: {{ contact.relationship_color }}; width: 16px;"></i>
+                <span>{{ contact.address }}</span>
+            </div>
+            {% endif %}
+            
+            {% if contact.notes %}
+            <div style="display: flex; align-items: start; gap: 0.5rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #dee2e6;">
+                <i class="fas fa-sticky-note" style="color: {{ contact.relationship_color }}; width: 16px; margin-top: 0.25rem;"></i>
+                <span style="font-style: italic; font-size: 0.9rem;">{{ contact.notes }}</span>
+            </div>
+            {% endif %}
+            
+            {% if contact.last_call %}
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.85rem; color: #999;">
+                <i class="fas fa-clock" style="width: 16px;"></i>
+                <span>Última llamada: {{ contact.last_call.strftime('%d/%m/%Y %H:%M') }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Acciones -->
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <!-- Botón de Llamar -->
+        <button onclick="showCallDialog({{ contact.id }}, '{{ contact.name }}', '{{ contact.formatted_phone }}')" 
+                style="background: #28a745; color: white; border: none; padding: 0.75rem 1.25rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s;">
+            <i class="fas fa-phone"></i> Llamar
+        </button>
+        
+        <!-- Botón de Editar -->
+        <a href="{{ url_for('dashboard.editar_contacto', contact_id=contact.id) }}" 
+           style="background: #17a2b8; color: white; border: none; padding: 0.75rem 1.25rem; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s;">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        
+        <!-- Botón de Eliminar -->
+        <form method="POST" action="{{ url_for('dashboard.eliminar_contacto', contact_id=contact.id) }}" 
+              onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contact.name }}?');" 
+              style="margin: 0;">
+            <button type="submit" 
+                    style="width: 100%; background: #dc3545; color: white; border: none; padding: 0.75rem 1.25rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s;">
+                <i class="fas fa-trash-alt"></i> Eliminar
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .contact-card:hover {
+        border-color: {{ contact.relationship_color }};
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .contact-card button:hover,
+    .contact-card a:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+    }
+</style>

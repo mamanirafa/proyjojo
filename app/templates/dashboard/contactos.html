@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1><i class="fas fa-address-book"></i> Agenda de Contactos</h1>
+            <p style="color: #666;">Gestiona tus contactos y números de emergencia</p>
+        </div>
+        <a href="{{ url_for('dashboard.nuevo_contacto') }}" style="background: #28a745; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+            <i class="fas fa-plus-circle"></i> Nuevo Contacto
+        </a>
+    </div>
+</div>
+
+<!-- Búsqueda -->
+<div style="background: white; padding: 1rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+    <input type="text" id="searchContacts" placeholder="Buscar contacto por nombre, teléfono o relación..." 
+           style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div style="background: linear-gradient(135deg, #dc3545 0%, #c92a2a 100%); color: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-ambulance" style="font-size: 2rem; opacity: 0.8;"></i>
+        <h3 style="margin: 0.5rem 0;">{{ emergency_contacts|length }}</h3>
+        <p style="margin: 0; opacity: 0.9;">Emergencias</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #813772 0%, #662d5c 100%); color: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-users" style="font-size: 2rem; opacity: 0.8;"></i>
+        <h3 style="margin: 0.5rem 0;">{{ family_contacts|length }}</h3>
+        <p style="margin: 0; opacity: 0.9;">Familia</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #28a745 0%, #208637 100%); color: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-user-md" style="font-size: 2rem; opacity: 0.8;"></i>
+        <h3 style="margin: 0.5rem 0;">{{ medical_contacts|length }}</h3>
+        <p style="margin: 0; opacity: 0.9;">Médicos</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-user-friends" style="font-size: 2rem; opacity: 0.8;"></i>
+        <h3 style="margin: 0.5rem 0;">{{ friends_contacts|length }}</h3>
+        <p style="margin: 0; opacity: 0.9;">Amigos</p>
+    </div>
+</div>
+
+<!-- Contactos de Emergencia -->
+{% if emergency_contacts %}
+<div class="contact-section" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem; border-left: 5px solid #dc3545;">
+    <h2 style="margin-top: 0; color: #dc3545;">
+        <i class="fas fa-ambulance"></i> Contactos de Emergencia
+    </h2>
+    <div style="display: grid; gap: 1rem;">
+        {% for contact in emergency_contacts %}
+        {% include 'dashboard/contact_card.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Familia -->
+{% if family_contacts %}
+<div class="contact-section" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem; border-left: 5px solid #813772;">
+    <h2 style="margin-top: 0; color: #813772;">
+        <i class="fas fa-users"></i> Familia
+    </h2>
+    <div style="display: grid; gap: 1rem;">
+        {% for contact in family_contacts %}
+        {% include 'dashboard/contact_card.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Médicos -->
+{% if medical_contacts %}
+<div class="contact-section" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem; border-left: 5px solid #28a745;">
+    <h2 style="margin-top: 0; color: #28a745;">
+        <i class="fas fa-user-md"></i> Médicos y Salud
+    </h2>
+    <div style="display: grid; gap: 1rem;">
+        {% for contact in medical_contacts %}
+        {% include 'dashboard/contact_card.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Amigos -->
+{% if friends_contacts %}
+<div class="contact-section" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem; border-left: 5px solid #17a2b8;">
+    <h2 style="margin-top: 0; color: #17a2b8;">
+        <i class="fas fa-user-friends"></i> Amigos
+    </h2>
+    <div style="display: grid; gap: 1rem;">
+        {% for contact in friends_contacts %}
+        {% include 'dashboard/contact_card.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Otros Contactos -->
+{% if other_contacts %}
+<div class="contact-section" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem; border-left: 5px solid #6c757d;">
+    <h2 style="margin-top: 0; color: #6c757d;">
+        <i class="fas fa-address-card"></i> Otros Contactos
+    </h2>
+    <div style="display: grid; gap: 1rem;">
+        {% for contact in other_contacts %}
+        {% include 'dashboard/contact_card.html' %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Mensaje si no hay contactos -->
+{% if not all_contacts %}
+<div style="background: white; padding: 3rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;">
+    <i class="fas fa-address-book" style="font-size: 4rem; color: #dee2e6; margin-bottom: 1rem;"></i>
+    <h3 style="color: #666;">No tienes contactos guardados</h3>
+    <p style="color: #999; margin-bottom: 1.5rem;">Comienza agregando tus contactos importantes y números de emergencia</p>
+    <a href="{{ url_for('dashboard.nuevo_contacto') }}" style="background: #28a745; color: white; padding: 0.75rem 2rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+        <i class="fas fa-plus-circle"></i> Agregar Primer Contacto
+    </a>
+</div>
+{% endif %}
+
+<script>
+// Búsqueda de contactos
+document.getElementById('searchContacts').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const sections = document.querySelectorAll('.contact-section');
+    
+    sections.forEach(section => {
+        const cards = section.querySelectorAll('.contact-card');
+        let visibleCount = 0;
+        
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Ocultar sección si no hay contactos visibles
+        if (visibleCount === 0) {
+            section.style.display = 'none';
+        } else {
+            section.style.display = 'block';
+        }
+    });
+});
+
+// Diálogo de llamada
+function showCallDialog(contactId, contactName, contactPhone) {
+    const modal = document.getElementById('callModal');
+    document.getElementById('callContactName').textContent = contactName;
+    document.getElementById('callContactPhone').textContent = contactPhone;
+    document.getElementById('callContactId').value = contactId;
+    modal.style.display = 'flex';
+}
+
+function closeCallDialog() {
+    document.getElementById('callModal').style.display = 'none';
+}
+
+// Cerrar modal al hacer clic fuera
+window.onclick = function(event) {
+    const modal = document.getElementById('callModal');
+    if (event.target == modal) {
+        closeCallDialog();
+    }
+}
+</script>
+
+<!-- Modal de Llamada -->
+<div id="callModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 15px; padding: 2rem; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fas fa-phone-volume" style="font-size: 3rem; color: #28a745; margin-bottom: 1rem;"></i>
+            <h2 style="margin: 0 0 0.5rem;">Llamar a:</h2>
+            <h3 id="callContactName" style="margin: 0; color: #062F4F;"></h3>
+            <p id="callContactPhone" style="margin: 0.5rem 0 0; font-size: 1.2rem; font-family: monospace; color: #666;"></p>
+        </div>
+        
+        <form method="POST" id="callForm">
+            <input type="hidden" id="callContactId" name="contact_id">
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #062F4F;">
+                    Seleccionar Robot
+                </label>
+                <select name="robot_id" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                    <option value="">-- Selecciona un robot --</option>
+                    {% if current_user.is_admin() or current_user.is_support() %}
+                        {% for robot in Robot.query.all() %}
+                        <option value="{{ robot.id }}">
+                            {{ robot.name }} {% if robot.is_online %}✅{% else %}❌{% endif %}
+                        </option>
+                        {% endfor %}
+                    {% else %}
+                        {% for robot in Robot.query.filter_by(is_public=True).all() %}
+                        <option value="{{ robot.id }}">
+                            {{ robot.name }} {% if robot.is_online %}✅{% else %}❌{% endif %}
+                        </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" onclick="closeCallDialog()" 
+                        style="flex: 1; padding: 0.75rem; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;">
+                    Cancelar
+                </button>
+                <button type="submit" 
+                        style="flex: 1; padding: 0.75rem; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem;">
+                    <i class="fas fa-phone"></i> Llamar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Enviar llamada
+document.getElementById('callForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const contactId = document.getElementById('callContactId').value;
+    const robotId = this.robot_id.value;
+    
+    if (!robotId) {
+        alert('Por favor selecciona un robot');
+        return;
+    }
+    
+    // Crear FormData y enviar
+    const formData = new FormData();
+    formData.append('robot_id', robotId);
+    
+    fetch(`/dashboard/contactos/${contactId}/llamar`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            closeCallDialog();
+            location.reload();
+        }
+    })
+    .catch(err => console.error('Error:', err));
+});
+</script>
+{% endblock %}

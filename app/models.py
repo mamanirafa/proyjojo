@@ -148,3 +148,69 @@ class Reminder(db.Model):
             return f"En {minutes} minuto{'s' if minutes > 1 else ''}"
         else:
             return "Ahora"
+
+
+class Contact(db.Model):
+    """Modelo para contactos y agenda telefónica del usuario."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120))
+    address = db.Column(db.String(200))
+    
+    # Relación del contacto
+    relationship = db.Column(db.String(50))  # 'familia', 'amigo', 'medico', 'emergencia', 'otro'
+    
+    # Indicador de contacto de emergencia
+    is_emergency = db.Column(db.Boolean, default=False)
+    is_favorite = db.Column(db.Boolean, default=False)
+    
+    # Información adicional
+    notes = db.Column(db.Text)
+    photo_url = db.Column(db.String(200))
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_call = db.Column(db.DateTime)
+    
+    # Foreign Key al usuario
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Contact {self.name} - {self.phone}>'
+    
+    @property
+    def relationship_icon(self):
+        """Retorna el icono de FontAwesome según la relación."""
+        icons = {
+            'familia': 'fa-users',
+            'amigo': 'fa-user-friends',
+            'medico': 'fa-user-md',
+            'emergencia': 'fa-ambulance',
+            'otro': 'fa-user'
+        }
+        return icons.get(self.relationship, 'fa-user')
+    
+    @property
+    def relationship_color(self):
+        """Retorna el color según la relación."""
+        colors = {
+            'familia': '#813772',
+            'amigo': '#17a2b8',
+            'medico': '#28a745',
+            'emergencia': '#dc3545',
+            'otro': '#6c757d'
+        }
+        return colors.get(self.relationship, '#6c757d')
+    
+    @property
+    def formatted_phone(self):
+        """Formatea el número de teléfono."""
+        # Eliminar caracteres no numéricos
+        digits = ''.join(filter(str.isdigit, self.phone))
+        
+        # Formato para números de 10 dígitos (XXX) XXX-XXXX
+        if len(digits) == 10:
+            return f'({digits[:3]}) {digits[3:6]}-{digits[6:]}'
+        return self.phone

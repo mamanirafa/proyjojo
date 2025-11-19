@@ -11,8 +11,9 @@
             <li><a href="{{ url_for('dashboard.index') }}"><span>Inicio</span><i class="fa-solid fa-arrow-right"></i></a></li>
             <li><a href="{{ url_for('dashboard.mapeado') }}"><span>Mapeado</span><i class="fa-solid fa-map-location-dot"></i></a></li>
             <li><a href="{{ url_for('dashboard.recordatorios') }}"><span>Recordatorios</span><i class="fa-solid fa-bell"></i></a></li>
-            <li><a href="#"><span>Llamadas</span><i class="fa-solid fa-phone-volume"></i></a></li>
-            <li><a href="#"><span>Brazo</span><i class="fa-solid fa-robot"></i></a></li>
+            <li><a href="{{ url_for('dashboard.contactos') }}"><span>Contactos</span><i class="fa-solid fa-address-book"></i></a></li>
+            <li><a href="{{ url_for('dashboard.llamadas') }}"><span>Llamadas</span><i class="fa-solid fa-phone-volume"></i></a></li>
+            <li><a href="{{ url_for('dashboard.brazo') }}"><span>Brazo</span><i class="fa-solid fa-robot"></i></a></li>
             
             {% if current_user.is_admin() or current_user.is_support() %}
             <li style="margin-top: 1rem; border-top: 2px solid rgba(255,255,255,0.2); padding-top: 1rem;">

@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <h1><i class="fas fa-robot"></i> Control de Brazo Mecánico</h1>
+    <p style="color: #666;">Controla el brazo robótico de JoJo con joysticks virtuales</p>
+</div>
+
+<!-- Selector de Robot -->
+<div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+    <h3 style="margin-top: 0;"><i class="fas fa-robot"></i> Seleccionar Robot</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        {% for robot in robots %}
+        <div class="robot-card" data-robot-id="{{ robot.id }}" data-robot-name="{{ robot.name }}" data-raspberry-ip="{{ robot.raspberry_ip }}"
+             style="padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-robot" style="font-size: 1.5rem; color: #813772;"></i>
+                <strong>{{ robot.name }}</strong>
+            </div>
+            {% if robot.is_online %}
+                <span style="color: #28a745; font-size: 0.9rem;">
+                    <i class="fas fa-circle" style="font-size: 0.6rem;"></i> En línea
+                </span>
+            {% else %}
+                <span style="color: #dc3545; font-size: 0.9rem;">
+                    <i class="fas fa-circle" style="font-size: 0.6rem;"></i> Desconectado
+                </span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <p id="selectedRobotInfo" style="margin-top: 1rem; color: #666; font-style: italic;">
+        Selecciona un robot para controlar su brazo
+    </p>
+</div>
+
+<!-- Panel de Control -->
+<div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 300px; gap: 2rem; align-items: start;">
+        
+        <!-- Joystick Izquierdo (Base y Hombro) -->
+        <div>
+            <h3 style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-arrows-alt"></i> Base y Hombro
+            </h3>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div id="leftJoystick" class="joystick" style="width: 250px; height: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; position: relative; box-shadow: 0 8px 16px rgba(0,0,0,0.2); cursor: grab;">
+                    <div id="leftStick" class="stick" style="width: 80px; height: 80px; background: white; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 3px solid #813772;"></div>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 0.5rem;">
+                        <div>
+                            <strong>Base:</strong>
+                            <span id="baseValue" style="color: #813772; font-family: monospace;">0</span>°
+                        </div>
+                        <div>
+                            <strong>Hombro:</strong>
+                            <span id="shoulderValue" style="color: #813772; font-family: monospace;">0</span>°
+                        </div>
+                    </div>
+                    <p style="color: #666; font-size: 0.85rem; margin: 0;">
+                        Horizontal: Base | Vertical: Hombro
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Joystick Derecho (Codo y Muñeca) -->
+        <div>
+            <h3 style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-hand-paper"></i> Codo y Muñeca
+            </h3>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div id="rightJoystick" class="joystick" style="width: 250px; height: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; position: relative; box-shadow: 0 8px 16px rgba(0,0,0,0.2); cursor: grab;">
+                    <div id="rightStick" class="stick" style="width: 80px; height: 80px; background: white; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 3px solid #dc3545;"></div>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 0.5rem;">
+                        <div>
+                            <strong>Codo:</strong>
+                            <span id="elbowValue" style="color: #dc3545; font-family: monospace;">0</span>°
+                        </div>
+                        <div>
+                            <strong>Muñeca:</strong>
+                            <span id="wristValue" style="color: #dc3545; font-family: monospace;">0</span>°
+                        </div>
+                    </div>
+                    <p style="color: #666; font-size: 0.85rem; margin: 0;">
+                        Horizontal: Codo | Vertical: Muñeca
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de Control -->
+        <div>
+            <h3 style="text-align: center; margin-bottom: 1rem;">
+                <i class="fas fa-sliders-h"></i> Controles
+            </h3>
+            
+            <!-- Botón de Pinza -->
+            <button id="gripperBtn" class="control-button" disabled
+                    style="width: 100%; padding: 2rem 1rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-bottom: 1.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s;">
+                <i class="fas fa-hand-rock" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                <span id="gripperText">Cerrar Pinza</span>
+            </button>
+            
+            <!-- Botón de Audio -->
+            <button id="audioBtn" class="control-button" disabled
+                    style="width: 100%; padding: 2rem 1rem; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-bottom: 1.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s;">
+                <i class="fas fa-microphone" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                <span id="audioText">Activar Audio</span>
+            </button>
+            
+            <!-- Botón de Reset -->
+            <button id="resetBtn" class="control-button" disabled
+                    style="width: 100%; padding: 1.5rem 1rem; background: #6c757d; color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 1.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s;">
+                <i class="fas fa-redo" style="margin-right: 0.5rem;"></i>
+                Posición Inicial
+            </button>
+            
+            <!-- Estado de Conexión -->
+            <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                <i class="fas fa-circle" id="connectionIndicator" style="color: #dc3545; font-size: 0.8rem;"></i>
+                <p id="connectionStatus" style="margin: 0.5rem 0 0; font-weight: 600; color: #dc3545;">
+                    Desconectado
+                </p>
+            </div>
+            
+            <!-- Info -->
+            <div style="background: #e7f3ff; border-left: 4px solid #0c5460; padding: 1rem; border-radius: 4px; margin-top: 1.5rem;">
+                <p style="margin: 0; color: #0c5460; font-size: 0.85rem;">
+                    <strong>Tip:</strong> Selecciona un robot en línea para activar los controles.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .robot-card:hover {
+        border-color: #813772;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(129, 55, 114, 0.2);
+    }
+    
+    .robot-card.selected {
+        border-color: #813772;
+        background: #f8f0f7;
+    }
+    
+    .joystick:active {
+        cursor: grabbing;
+    }
+    
+    .control-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .control-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .control-button.active {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+</style>
+
+<script>
+let selectedRobot = null;
+let leftJoystickActive = false;
+let rightJoystickActive = false;
+let gripperClosed = false;
+let audioActive = false;
+
+// Valores del brazo (0-180 grados)
+let armState = {
+    base: 90,
+    shoulder: 90,
+    elbow: 90,
+    wrist: 90,
+    gripper: 0 // 0 = abierto, 1 = cerrado
+};
+
+// Selección de robot
+document.querySelectorAll('.robot-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.robot-card').forEach(c => c.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        selectedRobot = {
+            id: this.dataset.robotId,
+            name: this.dataset.robotName,
+            ip: this.dataset.raspberryIp
+        };
+        
+        document.getElementById('selectedRobotInfo').textContent = `Robot seleccionado: ${selectedRobot.name}`;
+        document.getElementById('selectedRobotInfo').style.color = '#28a745';
+        document.getElementById('selectedRobotInfo').style.fontStyle = 'normal';
+        
+        // Habilitar controles
+        document.getElementById('gripperBtn').disabled = false;
+        document.getElementById('audioBtn').disabled = false;
+        document.getElementById('resetBtn').disabled = false;
+        
+        // Actualizar estado
+        document.getElementById('connectionStatus').textContent = 'Conectado: ' + selectedRobot.name;
+        document.getElementById('connectionStatus').style.color = '#28a745';
+        document.getElementById('connectionIndicator').style.color = '#28a745';
+    });
+});
+
+// Función para enviar comando MQTT
+function sendArmCommand(joint, value) {
+    if (!selectedRobot) return;
+    
+    const topic = `robot/${selectedRobot.id}/arm/${joint}`;
+    const payload = { value: value };
+    
+    fetch('/api/mqtt/publish', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            topic: topic,
+            payload: payload
+        })
+    }).catch(err => console.error('Error enviando comando:', err));
+}
+
+// Joystick Izquierdo (Base y Hombro)
+const leftJoystick = document.getElementById('leftJoystick');
+const leftStick = document.getElementById('leftStick');
+
+leftJoystick.addEventListener('mousedown', startLeftJoystick);
+leftJoystick.addEventListener('touchstart', startLeftJoystick);
+
+function startLeftJoystick(e) {
+    if (!selectedRobot) return;
+    leftJoystickActive = true;
+    moveLeftJoystick(e);
+}
+
+function moveLeftJoystick(e) {
+    if (!leftJoystickActive) return;
+    
+    e.preventDefault();
+    const rect = leftJoystick.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    let clientX, clientY;
+    if (e.type.includes('touch')) {
+        clientX = e.touches[0].clientX - rect.left;
+        clientY = e.touches[0].clientY - rect.top;
+    } else {
+        clientX = e.clientX - rect.left;
+        clientY = e.clientY - rect.top;
+    }
+    
+    let deltaX = clientX - centerX;
+    let deltaY = clientY - centerY;
+    
+    // Limitar al radio del joystick
+    const maxRadius = (rect.width / 2) - 40;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (distance > maxRadius) {
+        const angle = Math.atan2(deltaY, deltaX);
+        deltaX = Math.cos(angle) * maxRadius;
+        deltaY = Math.sin(angle) * maxRadius;
+    }
+    
+    leftStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+    
+    // Convertir a ángulos (0-180)
+    armState.base = Math.round(90 + (deltaX / maxRadius) * 90);
+    armState.shoulder = Math.round(90 - (deltaY / maxRadius) * 90);
+    
+    document.getElementById('baseValue').textContent = armState.base;
+    document.getElementById('shoulderValue').textContent = armState.shoulder;
+    
+    sendArmCommand('base', armState.base);
+    sendArmCommand('shoulder', armState.shoulder);
+}
+
+document.addEventListener('mousemove', moveLeftJoystick);
+document.addEventListener('touchmove', moveLeftJoystick);
+
+document.addEventListener('mouseup', () => {
+    leftJoystickActive = false;
+    leftStick.style.transform = 'translate(-50%, -50%)';
+});
+
+document.addEventListener('touchend', () => {
+    leftJoystickActive = false;
+    leftStick.style.transform = 'translate(-50%, -50%)';
+});
+
+// Joystick Derecho (Codo y Muñeca)
+const rightJoystick = document.getElementById('rightJoystick');
+const rightStick = document.getElementById('rightStick');
+
+rightJoystick.addEventListener('mousedown', startRightJoystick);
+rightJoystick.addEventListener('touchstart', startRightJoystick);
+
+function startRightJoystick(e) {
+    if (!selectedRobot) return;
+    rightJoystickActive = true;
+    moveRightJoystick(e);
+}
+
+function moveRightJoystick(e) {
+    if (!rightJoystickActive) return;
+    
+    e.preventDefault();
+    const rect = rightJoystick.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    let clientX, clientY;
+    if (e.type.includes('touch')) {
+        clientX = e.touches[0].clientX - rect.left;
+        clientY = e.touches[0].clientY - rect.top;
+    } else {
+        clientX = e.clientX - rect.left;
+        clientY = e.clientY - rect.top;
+    }
+    
+    let deltaX = clientX - centerX;
+    let deltaY = clientY - centerY;
+    
+    const maxRadius = (rect.width / 2) - 40;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (distance > maxRadius) {
+        const angle = Math.atan2(deltaY, deltaX);
+        deltaX = Math.cos(angle) * maxRadius;
+        deltaY = Math.sin(angle) * maxRadius;
+    }
+    
+    rightStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+    
+    armState.elbow = Math.round(90 + (deltaX / maxRadius) * 90);
+    armState.wrist = Math.round(90 - (deltaY / maxRadius) * 90);
+    
+    document.getElementById('elbowValue').textContent = armState.elbow;
+    document.getElementById('wristValue').textContent = armState.wrist;
+    
+    sendArmCommand('elbow', armState.elbow);
+    sendArmCommand('wrist', armState.wrist);
+}
+
+document.addEventListener('mousemove', moveRightJoystick);
+document.addEventListener('touchmove', moveRightJoystick);
+
+document.addEventListener('mouseup', () => {
+    rightJoystickActive = false;
+    rightStick.style.transform = 'translate(-50%, -50%)';
+});
+
+document.addEventListener('touchend', () => {
+    rightJoystickActive = false;
+    rightStick.style.transform = 'translate(-50%, -50%)';
+});
+
+// Control de Pinza
+document.getElementById('gripperBtn').addEventListener('click', function() {
+    gripperClosed = !gripperClosed;
+    
+    if (gripperClosed) {
+        this.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%)';
+        document.getElementById('gripperText').textContent = 'Abrir Pinza';
+        armState.gripper = 180;
+    } else {
+        this.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+        document.getElementById('gripperText').textContent = 'Cerrar Pinza';
+        armState.gripper = 0;
+    }
+    
+    sendArmCommand('gripper', armState.gripper);
+});
+
+// Control de Audio
+document.getElementById('audioBtn').addEventListener('click', async function() {
+    audioActive = !audioActive;
+    
+    if (audioActive) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.classList.add('active');
+            document.getElementById('audioText').textContent = 'Desactivar Audio';
+            
+            // Aquí se podría implementar el envío de audio por WebRTC o WebSocket
+            console.log('Audio activado');
+        } catch (err) {
+            console.error('Error al activar audio:', err);
+            alert('No se pudo acceder al micrófono');
+            audioActive = false;
+        }
+    } else {
+        this.classList.remove('active');
+        document.getElementById('audioText').textContent = 'Activar Audio';
+        console.log('Audio desactivado');
+    }
+});
+
+// Reset a posición inicial
+document.getElementById('resetBtn').addEventListener('click', function() {
+    armState = {
+        base: 90,
+        shoulder: 90,
+        elbow: 90,
+        wrist: 90,
+        gripper: 0
+    };
+    
+    document.getElementById('baseValue').textContent = 90;
+    document.getElementById('shoulderValue').textContent = 90;
+    document.getElementById('elbowValue').textContent = 90;
+    document.getElementById('wristValue').textContent = 90;
+    
+    sendArmCommand('base', 90);
+    sendArmCommand('shoulder', 90);
+    sendArmCommand('elbow', 90);
+    sendArmCommand('wrist', 90);
+    sendArmCommand('gripper', 0);
+    
+    gripperClosed = false;
+    document.getElementById('gripperBtn').style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+    document.getElementById('gripperText').textContent = 'Cerrar Pinza';
+});
+</script>
+{% endblock %}
